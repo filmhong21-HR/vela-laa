@@ -53,7 +53,6 @@
       darkMode: false,
       fontSizeLevel: 'normal',
       idCardFlipped: false,
-      ipLocation: "Samut Sakhon, Thailand (IP: 184.22.10.45)",
       leaveRequests: [
         { id: "LR-20260930-01", empId: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", dept: "Human Resource Management", type: "พักร้อน", startDate: "2026-10-05", endDate: "2026-10-06", days: 2, reason: "ธุระส่วนตัว", status: "approved", date: "2026-09-28" }
       ],
@@ -61,7 +60,9 @@
         { id: "DOC-20260930-PPITZ", empId: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", dept: "Human Resource Management", type: "work_certificate", purpose: "ขอสินเชื่อกับสถาบันการเงินหรือธนาคาร", status: "approved", date: "2026-09-30" }
       ],
       attendanceRecords: [
-        { date: "2026-09-30", empId: "EMP001", name: "นาย สมชาย ใจดี", status: "มาสาย", ip: "184.22.10.48" }
+        { date: "2026-09-30", empId: "EMP001", name: "นาย สมชาย ใจดี", status: "มาสาย", ip: "184.22.10.48" },
+        { date: "2026-09-30", empId: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", status: "ปกติ", ip: "184.22.10.45" },
+        { date: "2026-09-30", empId: "MGT001", name: "นาย วิชัย มั่งคั่ง", status: "ปกติ", ip: "184.22.10.12" }
       ],
       holidays: [
         { date: "2026-10-13", name: "วันคล้ายวันสวรรคต ร.9" },
@@ -70,8 +71,8 @@
         { date: "2026-12-31", name: "วันสิ้นปี" }
       ],
       announcements: [
-        { id: 1, title: "ประกาศวันหยุดและโควตาพักร้อน", content: "บริษัทไม่มีนโยบายวันลาสะสมข้ามปี กรุณาใช้สิทธิ์พักร้อนให้หมดภายใน 31 ธันวาคมนี้", date: "2026-09-30", urgent: true },
-        { id: 2, title: "แจ้งเปลี่ยนรอบการจ่ายเงินเดือน", content: "เริ่มตั้งแต่เดือนหน้าเป็นต้นไป การจ่ายเงินเดือนจะปรับมาเป็นรอบวันที่ 25 ของเดือน", date: "2026-09-25", urgent: false }
+        { id: 1, title: "📢 ประกาศวันหยุดและโควตาพักร้อน", content: "บริษัทไม่มีนโยบายวันลาสะสมข้ามปี กรุณาใช้สิทธิ์พักร้อนให้หมดภายใน 31 ธันวาคมนี้", date: "2026-09-30", urgent: true },
+        { id: 2, title: "💼 แจ้งเปลี่ยนรอบการจ่ายเงินเดือน", content: "เริ่มตั้งแต่เดือนหน้าเป็นต้นไป การจ่ายเงินเดือนจะปรับมาเป็นรอบวันที่ 25 ของเดือน", date: "2026-09-25", urgent: false }
       ],
       auditTrail: [
         { id: 1, timestamp: "2026-09-30 08:30:12", user: "P322 (Admin)", action: "UPDATE_QUOTA", detail: "แก้ไขโควตาพนักงาน EMP001" }
@@ -120,56 +121,54 @@
             </div>
 
             <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <!-- เมนูพนักงานทั่วไป -->
+              <div class="pt-2 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">👤 เมนูพนักงานทั่วไป</div>
               <button onclick="switchTab('dashboard')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'dashboard' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                <i class="fa-solid fa-house w-5"></i><span>แดชบอร์ดส่วนตัว</span>
+                <i class="fa-solid fa-house w-5"></i><span>🏠 แดชบอร์ดส่วนตัว</span>
               </button>
               <button onclick="switchTab('my_leave')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'my_leave' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                <i class="fa-solid fa-calendar-days w-5"></i><span>การลาของฉัน</span>
+                <i class="fa-solid fa-calendar-days w-5"></i><span>🏖️ การลาของฉัน</span>
               </button>
               <button onclick="switchTab('documents')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'documents' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                <i class="fa-solid fa-file-contract w-5"></i><span>ขอเอกสารสำคัญ</span>
+                <i class="fa-solid fa-file-contract w-5"></i><span>📄 ขอเอกสารสำคัญ</span>
               </button>
               <button onclick="switchTab('id_card')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'id_card' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                <i class="fa-solid fa-id-card w-5"></i><span>บัตรพนักงานดิจิทัล</span>
+                <i class="fa-solid fa-id-card w-5"></i><span>🪪 บัตรพนักงานดิจิทัล</span>
               </button>
               <button onclick="switchTab('calendar')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'calendar' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                <i class="fa-solid fa-calendar-alt w-5"></i><span>ปฏิทิน & วันหยุดบริษัท</span>
+                <i class="fa-solid fa-calendar-alt w-5"></i><span>📅 ปฏิทิน & วันหยุดบริษัท</span>
               </button>
 
-              <!-- เมนูผู้จัดการ / แอดมิน / ผู้บริหาร -->
               ${['supervisor', 'admin', 'executive'].includes(state.currentUser.role) ? `
-                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">มุมมองผู้จัดการ/อนุมัติ</div>
+                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">🛠️ มุมมองผู้จัดการ/ผู้อนุมัติ</div>
                 <button onclick="switchTab('approvals')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'approvals' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                  <i class="fa-solid fa-clipboard-check w-5"></i><span>อนุมัติคำขอ</span>
+                  <i class="fa-solid fa-clipboard-check w-5"></i><span>✅ อนุมัติคำขอลา</span>
                 </button>
               ` : ''}
 
-              <!-- เมนูเฉพาะ Admin / Executive -->
               ${['admin', 'executive'].includes(state.currentUser.role) ? `
-                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">มุมมองผู้ดูแลระบบ (Admin)</div>
+                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">⚙️ มุมมองผู้ดูแลระบบ (Admin)</div>
                 <button onclick="switchTab('admin_management')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'admin_management' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                  <i class="fa-solid fa-user-gear w-5"></i><span>จัดการพนักงาน & โควตา</span>
+                  <i class="fa-solid fa-user-gear w-5"></i><span>👥 จัดการพนักงาน & โควตา</span>
                 </button>
                 <button onclick="switchTab('attendance')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'attendance' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                  <i class="fa-solid fa-users-viewfinder w-5"></i><span>บันทึกการมาทำงาน</span>
+                  <i class="fa-solid fa-users-viewfinder w-5"></i><span>📍 บันทึกการมาทำงาน (ดู IP ทุกคน)</span>
                 </button>
                 <button onclick="switchTab('audit_trail')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'audit_trail' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                  <i class="fa-solid fa-shield-halved w-5"></i><span>ประวัติ Audit Trail</span>
+                  <i class="fa-solid fa-shield-halved w-5"></i><span>🛡️ ประวัติ Audit Trail</span>
                 </button>
               ` : ''}
 
               ${state.currentUser.role === 'executive' ? `
-                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">ผู้บริหาร</div>
+                <div class="pt-4 pb-1 text-[10px] uppercase font-bold text-blue-300 tracking-wider px-3">📊 ผู้บริหาร</div>
                 <button onclick="switchTab('executive_overview')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'executive_overview' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
-                  <i class="fa-solid fa-chart-pie w-5"></i><span>แดชบอร์ดภาพรวมองค์กร</span>
+                  <i class="fa-solid fa-chart-pie w-5"></i><span>📈 แดชบอร์ดภาพรวมองค์กร</span>
                 </button>
               ` : ''}
             </nav>
 
             <div class="p-4 border-t border-blue-900">
               <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg font-medium transition text-sm">
-                <i class="fa-solid fa-right-from-bracket"></i><span>ออกจากระบบ</span>
+                <i class="fa-solid fa-right-from-bracket"></i><span>🚪 ออกจากระบบ</span>
               </button>
             </div>
           </aside>
@@ -177,12 +176,7 @@
           <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 px-6 flex items-center justify-between shadow-sm no-print">
               <div class="flex items-center space-x-2 text-sm text-slate-500">
-                ${state.currentUser.role === 'admin' ? `
-                  <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600">
-                    <i class="fa-solid fa-location-dot text-brand-accent"></i>
-                    <span class="text-xs font-semibold">Admin IP Location: ${state.ipLocation}</span>
-                  </div>
-                ` : ``}
+                <span class="font-semibold text-xs text-slate-600 dark:text-slate-300">🏢 ระบบบริหารจัดการทรัพยากรบุคคล VELA LAA</span>
               </div>
               <div class="flex items-center space-x-3">
                 <div class="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
@@ -235,10 +229,10 @@
               </button>
               <div class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-xl text-xs space-y-1">
                 <p class="font-bold text-brand-primary dark:text-blue-400">🔑 รหัสพนักงานสำหรับทดสอบ:</p>
-                <p>• <b>P322</b> (คุณนภสร - Admin / เห็น IP)</p>
-                <p>• <b>EMP001</b> (พนักงานทั่วไป)</p>
-                <p>• <b>MGT001</b> (หัวหน้างาน)</p>
-                <p>• <b>EXC001</b> (ผู้บริหาร)</p>
+                <p>• <b>P322</b> (คุณนภสร - Admin เห็น IP ทุกคน)</p>
+                <p>• <b>EMP001</b> (นายสมชาย - พนักงานทั่วไป)</p>
+                <p>• <b>MGT001</b> (นายวิชัย - หัวหน้างาน)</p>
+                <p>• <b>EXC001</b> (ดร.ปรีชา - ผู้บริหาร)</p>
               </div>
             </div>
           </div>
@@ -262,7 +256,6 @@
       }
     }
 
-    // แดชบอร์ดส่วนตัว + บอร์ดประกาศบริษัท
     function renderDashboard() {
       const user = state.currentUser;
       const tenure = calculateTenure(user.startDate);
@@ -284,15 +277,14 @@
             </div>
           </div>
 
-          <!-- บอร์ดประกาศบริษัท (Announcements) -->
           <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-bullhorn text-brand-accent text-lg"></i>
-                <h3 class="font-bold text-lg">ประกาศและข่าวสารบริษัท</h3>
+                <h3 class="font-bold text-lg">📢 ประกาศและข่าวสารบริษัท</h3>
               </div>
-              ${user.role === 'admin' ? `
-                <button onclick="openNewAnnouncementModal()" class="bg-brand-primary text-white px-3 py-1.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i>เพิ่มประกาศ</button>
+              ${['admin', 'executive'].includes(user.role) ? `
+                <button onclick="openNewAnnouncementModal()" class="bg-brand-accent text-white px-4 py-2 rounded-xl text-xs font-bold shadow hover:bg-orange-600 transition"><i class="fa-solid fa-plus mr-1"></i>เพิ่มประกาศบริษัท</button>
               ` : ''}
             </div>
             <div class="space-y-3">
@@ -304,25 +296,24 @@
                       <h4 class="font-bold text-sm">${ann.title}</h4>
                     </div>
                     <p class="text-xs text-slate-600 dark:text-slate-300">${ann.content}</p>
-                    <span class="text-[10px] text-slate-400">วันที่ประกาศ: ${ann.date}</span>
+                    <span class="text-[10px] text-slate-400">📅 วันที่ประกาศ: ${ann.date}</span>
                   </div>
                 </div>
               `).join('')}
             </div>
           </div>
 
-          <!-- สรุปโควตาวันลา -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
-              <div><p class="text-xs text-slate-500 uppercase">พักร้อน (คงเหลือ)</p><h4 class="text-3xl font-extrabold text-blue-600 mt-1">${user.quota.annual} วัน</h4><p class="text-[10px] text-red-500 mt-1">ตัดทิ้งสิ้นปีโดยเด็ดขาด</p></div>
+              <div><p class="text-xs text-slate-500 uppercase">🏖️ พักร้อน (คงเหลือ)</p><h4 class="text-3xl font-extrabold text-blue-600 mt-1">${user.quota.annual} วัน</h4><p class="text-[10px] text-red-500 mt-1">ตัดทิ้งสิ้นปีโดยเด็ดขาด</p></div>
               <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-umbrella-beach"></i></div>
             </div>
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
-              <div><p class="text-xs text-slate-500 uppercase">ลากิจ</p><h4 class="text-3xl font-extrabold text-emerald-600 mt-1">${user.quota.business} วัน</h4></div>
+              <div><p class="text-xs text-slate-500 uppercase">💼 ลากิจ</p><h4 class="text-3xl font-extrabold text-emerald-600 mt-1">${user.quota.business} วัน</h4></div>
               <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-briefcase"></i></div>
             </div>
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
-              <div><p class="text-xs text-slate-500 uppercase">ลาป่วย</p><h4 class="text-3xl font-extrabold text-purple-600 mt-1">${user.quota.sick} วัน</h4></div>
+              <div><p class="text-xs text-slate-500 uppercase">🤒 ลาป่วย</p><h4 class="text-3xl font-extrabold text-purple-600 mt-1">${user.quota.sick} วัน</h4></div>
               <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl"><i class="fa-solid fa-bed-pulse"></i></div>
             </div>
           </div>
@@ -335,7 +326,7 @@
       return `
         <div class="space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold">การลาของฉัน</h2>
+            <h2 class="text-2xl font-bold">🏖️ การลาของฉัน</h2>
             <button onclick="openNewLeaveModal()" class="bg-brand-accent text-white px-4 py-2 rounded-xl font-bold shadow text-sm"><i class="fa-solid fa-plus mr-2"></i>ยื่นใบลาใหม่</button>
           </div>
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
@@ -349,7 +340,7 @@
                     <td class="p-4 text-xs">${r.startDate} ถึง ${r.endDate}</td>
                     <td class="p-4 font-bold">${r.days} วัน</td>
                     <td class="p-4 text-slate-600">${r.reason}</td>
-                    <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติแล้ว</span></td>
+                    <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">✅ อนุมัติแล้ว</span></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -365,7 +356,7 @@
         <div class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-bold">ขอเอกสารสำคัญ</h2>
+              <h2 class="text-2xl font-bold">📄 ขอเอกสารสำคัญ</h2>
               <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-clock mr-1 text-brand-accent"></i> ระยะเวลาดำเนินการ 3-5 วันทำการ</p>
             </div>
             <button onclick="openNewDocModal()" class="bg-brand-accent text-white px-4 py-2 rounded-xl font-bold shadow text-sm"><i class="fa-solid fa-plus mr-2"></i>ยื่นคำขอใหม่</button>
@@ -375,7 +366,7 @@
               <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold bg-blue-50 text-brand-primary px-3 py-1 rounded-full">เลขที่: ${d.id}</span>
-                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติแล้ว</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">✅ อนุมัติแล้ว</span>
                 </div>
                 <div>
                   <h3 class="font-bold text-lg">หนังสือรับรองการทำงาน</h3>
@@ -394,18 +385,17 @@
       `;
     }
 
-    // ปฏิทินและวันหยุดบริษัท (Calendar & Holidays)
     function renderCalendar() {
       return `
         <div class="space-y-6">
-          <h2 class="text-2xl font-bold">ปฏิทินวันหยุดบริษัท และกำหนดการลา</h2>
+          <h2 class="text-2xl font-bold">📅 ปฏิทินวันหยุดบริษัท และกำหนดการลา</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border space-y-4">
               <h3 class="font-bold text-lg text-brand-primary flex items-center"><i class="fa-solid fa-calendar-star mr-2 text-brand-accent"></i> วันหยุดประจำปีบริษัท</h3>
               <div class="space-y-3">
                 ${state.holidays.map(h => `
                   <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl flex items-center justify-between">
-                    <span class="font-semibold text-sm">${h.name}</span>
+                    <span class="font-semibold text-sm">📌 ${h.name}</span>
                     <span class="text-xs bg-brand-primary text-white px-3 py-1 rounded-full">${h.date}</span>
                   </div>
                 `).join('')}
@@ -417,8 +407,8 @@
                 ${state.leaveRequests.map(lr => `
                   <div class="p-3 bg-blue-50/50 dark:bg-slate-700/40 rounded-xl flex items-center justify-between">
                     <div>
-                      <p class="font-bold text-xs">${lr.name} (${lr.type})</p>
-                      <p class="text-[10px] text-slate-500">${lr.startDate} ถึง ${lr.endDate}</p>
+                      <p class="font-bold text-xs">👤 ${lr.name} (${lr.type})</p>
+                      <p class="text-[10px] text-slate-500">🗓️ ${lr.startDate} ถึง ${lr.endDate}</p>
                     </div>
                     <span class="text-xs font-bold text-emerald-600">${lr.days} วัน</span>
                   </div>
@@ -430,13 +420,12 @@
       `;
     }
 
-    // บัตรพนักงานดิจิทัล
     function renderIdCard() {
       const user = state.currentUser;
       return `
         <div class="space-y-6 flex flex-col items-center">
           <div class="w-full flex items-center justify-between">
-            <h2 class="text-2xl font-bold">บัตรประจำตัวพนักงานดิจิทัล</h2>
+            <h2 class="text-2xl font-bold">🪪 บัตรประจำตัวพนักงานดิจิทัล</h2>
             <button onclick="toggleIdCardFlip()" class="bg-brand-primary text-white px-4 py-2 rounded-xl text-sm font-bold shadow"><i class="fa-solid fa-rotate mr-2"></i>พลิกบัตร (หน้า / หลัง)</button>
           </div>
 
@@ -509,11 +498,10 @@
       `;
     }
 
-    // มุมมองแอดมิน: จัดการพนักงานและโควตา
     function renderAdminManagement() {
       return `
         <div class="space-y-6">
-          <h2 class="text-2xl font-bold">จัดการพนักงานและโควตาวันลา (Admin Management)</h2>
+          <h2 class="text-2xl font-bold">👥 จัดการพนักงานและโควตาวันลา (Admin Management)</h2>
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
             <table class="w-full text-left">
               <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">รหัส</th><th class="p-4">ชื่อ-นามสกุล</th><th class="p-4">แผนก</th><th class="p-4">พักร้อน (คงเหลือ)</th><th class="p-4">ลากิจ</th><th class="p-4">ลาป่วย</th></tr></thead>
@@ -538,7 +526,7 @@
     function renderApprovals() {
       return `
         <div class="space-y-6">
-          <h2 class="text-2xl font-bold">อนุมัติคำขอลา (Approval Workflow)</h2>
+          <h2 class="text-2xl font-bold">✅ อนุมัติคำขอลา (Approval Workflow)</h2>
           <div class="space-y-4">
             ${state.leaveRequests.map(r => `
               <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex flex-col md:flex-row items-center justify-between gap-4">
@@ -552,7 +540,7 @@
                   <p class="text-xs text-slate-600 italic bg-slate-50 p-2 rounded-lg">เหตุผล: "${r.reason}"</p>
                 </div>
                 <div class="flex space-x-3">
-                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติเรียบร้อย</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">✅ อนุมัติเรียบร้อย</span>
                 </div>
               </div>
             `).join('')}
@@ -561,16 +549,31 @@
       `;
     }
 
+    // บันทึกการมาทำงาน: แอดมินเห็น IP ของทุกคน แต่พนักงานทั่วไปไม่เห็น
     function renderAttendance() {
+      const isAdmin = ['admin', 'executive'].includes(state.currentUser.role);
       return `
         <div class="space-y-6">
-          <h2 class="text-2xl font-bold">บันทึกการมาทำงานและการลารายเดือน (Admin View)</h2>
+          <h2 class="text-2xl font-bold">📍 บันทึกการมาทำงานและการลารายเดือน</h2>
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
             <table class="w-full text-left">
-              <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">วันที่</th><th class="p-4">รหัสพนักงาน</th><th class="p-4">ชื่อ-นามสกุล</th><th class="p-4">สถานะ</th><th class="p-4">IP Location</th></tr></thead>
+              <thead>
+                <tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b">
+                  <th class="p-4">วันที่</th>
+                  <th class="p-4">รหัสพนักงาน</th>
+                  <th class="p-4">ชื่อ-นามสกุล</th>
+                  <th class="p-4">สถานะ</th>
+                  ${isAdmin ? `<th class="p-4 text-brand-accent font-bold">🔒 IP Address (เฉพาะ Admin เห็น)</th>` : ''}
+                </tr>
+              </thead>
               <tbody class="divide-y text-sm">
                 ${state.attendanceRecords.map(a => `
-                  <tr><td class="p-4 text-xs">${a.date}</td><td class="p-4 font-bold">${a.empId}</td><td class="p-4">${a.name}</td><td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">${a.status}</span></td><td class="p-4 text-xs text-slate-500">${a.ip}</td></tr>
+                  <tr>
+                    <td class="p-4 text-xs">${a.date}</td>
+                    <td class="p-4 font-bold">${a.empId}</td>
+                    <td class="p-4">${a.name}</td>
+                    <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">${a.status}</span></td>${isAdmin ? `<td class="p-4 text-xs font-mono font-bold text-blue-600">${a.ip}</td>` : ''}
+                  </tr>
                 `).join('')}
               </tbody>
             </table>
@@ -582,7 +585,7 @@
     function renderAuditTrail() {
       return `
         <div class="space-y-6">
-          <h2 class="text-2xl font-bold">ประวัติการเปลี่ยนแปลงระดับฟิลด์ (Audit Trail)</h2>
+          <h2 class="text-2xl font-bold">🛡️ ประวัติการเปลี่ยนแปลงระดับฟิลด์ (Audit Trail)</h2>
           <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
             <table class="w-full text-left">
               <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">เวลา</th><th class="p-4">ผู้ใช้งาน</th><th class="p-4">การกระทำ</th><th class="p-4">รายละเอียด</th></tr></thead>
@@ -601,7 +604,7 @@
       return `
         <div class="space-y-6">
           <div class="bg-gradient-to-r from-slate-900 to-brand-primary rounded-2xl p-6 text-white shadow-lg">
-            <h2 class="text-2xl font-bold">แดชบอร์ดภาพรวมผู้บริหาร (Executive Overview)</h2>
+            <h2 class="text-2xl font-bold">📈 แดชบอร์ดภาพรวมผู้บริหาร (Executive Overview)</h2>
             <p class="text-xs text-slate-300 mt-1">รายงานสถิติและภาพรวมองค์กรสำหรับผู้บริหารระดับสูง</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -680,7 +683,7 @@
       return `
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold">ยื่นใบลาใหม่</h3>
+            <h3 class="text-lg font-bold">🏖️ ยื่นใบลาใหม่</h3>
             <div class="space-y-3">
               <div><label class="text-xs font-semibold">ประเภทการลา</label><select id="leaveTypeInput" class="w-full mt-1 p-3 rounded-xl border text-sm"><option value="พักร้อน">พักร้อน</option><option value="ลากิจ">ลากิจ</option><option value="ลาป่วย">ลาป่วย</option></select></div>
               <div class="grid grid-cols-2 gap-3">
@@ -702,7 +705,7 @@
       return `
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold">ยื่นขอหนังสือรับรอง</h3>
+            <h3 class="text-lg font-bold">📄 ยื่นขอหนังสือรับรอง</h3>
             <div class="space-y-3">
               <div><label class="text-xs font-semibold">ประเภทเอกสาร</label><select id="docTypeInput" class="w-full mt-1 p-3 rounded-xl border text-sm"><option value="work_certificate">หนังสือรับรองการทำงาน</option></select></div>
               <div><label class="text-xs font-semibold">วัตถุประสงค์</label><input type="text" id="docPurposeInput" placeholder="เช่น ขอสินเชื่อกับสถาบันการเงินหรือธนาคาร" class="w-full mt-1 p-3 rounded-xl border text-sm"></div>
@@ -721,7 +724,7 @@
       return `
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold">เพิ่มประกาศบริษัทใหม่</h3>
+            <h3 class="text-lg font-bold">📢 เพิ่มประกาศบริษัทใหม่</h3>
             <div class="space-y-3">
               <div><label class="text-xs font-semibold">หัวข้อประกาศ</label><input type="text" id="annTitleInput" placeholder="หัวข้อ..." class="w-full mt-1 p-3 rounded-xl border text-sm"></div>
               <div><label class="text-xs font-semibold">เนื้อหาประกาศ</label><textarea id="annContentInput" rows="3" placeholder="รายละเอียด..." class="w-full mt-1 p-3 rounded-xl border text-sm"></textarea></div>
@@ -795,7 +798,7 @@
       if (!title || !content) { alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
       state.announcements.unshift({
         id: Date.now(),
-        title: title,
+        title: (urgent ? '🚨 ' : '📢 ') + title,
         content: content,
         date: '2026-09-30',
         urgent: urgent
