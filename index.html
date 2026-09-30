@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VELA LAA - Preecha Steel Part Co., Ltd.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { primary: '#1a365d', secondary: '#2b6cb0', accent: '#ed8936', dark: '#0f172a', light: '#f8fafc' }
+          },
+          fontFamily: { sans: ['Prompt', 'Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Prompt', 'Inter', sans-serif; }
+    @media print {
+      body * { visibility: hidden; }
+      .printable-document, .printable-document * { visibility: visible; }
+      .printable-document { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; box-shadow: none !important; background: white !important; }
+      .no-print { display: none !important; }
+    }
+    .flip-card { perspective: 1000px; }
+    .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+    .flip-card-front, .flip-card-back { backface-visibility: hidden; }
+    .flip-card-back { transform: rotateY(180deg); }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200" style="font-size: 16px;">
+
+  <div id="app" class="flex-1 flex flex-col"></div>
+
+  <script>
+    const usersDb = [
+      { id: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", nameEn: "MS.NAPATSORN HONGHIRANWIJIT", role: "admin", dept: "Human Resource Management", startDate: "2021-06-15", salary: "45,000", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", quota: { annual: 10, business: 5, sick: 30 } },
+      { id: "EMP001", name: "นาย สมชาย ใจดี", nameEn: "MR.SOMCHAI JAIDEE", role: "employee", dept: "Production & Engineering", startDate: "2023-01-10", salary: "28,000", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", quota: { annual: 6, business: 3, sick: 30 } },
+      { id: "MGT001", name: "นาย วิชัย มั่งคั่ง", nameEn: "MR.WICHAI MANGKANG", role: "supervisor", dept: "Quality Assurance", startDate: "2018-03-01", salary: "55,000", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", quota: { annual: 15, business: 7, sick: 30 } },
+      { id: "EXC001", name: "ดร. ปรีชา สติลพาร์ท", nameEn: "DR.PREECHA STEELPART", role: "executive", dept: "Executive Board", startDate: "2015-01-01", salary: "120,000", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150", quota: { annual: 20, business: 10, sick: 30 } }
+    ];
+
+    let state = {
+      currentUser: null,
+      activeTab: 'dashboard',
+      darkMode: false,
+      fontSizeLevel: 'normal',
+      idCardFlipped: false,
+      ipLocation: "Samut Sakhon, Thailand (IP: 184.22.10.45)",
+      leaveRequests: [
+        { id: "LR-20260930-01", empId: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", dept: "Human Resource Management", type: "พักร้อน", startDate: "2026-10-05", endDate: "2026-10-06", days: 2, reason: "ธุระส่วนตัว", status: "approved", date: "2026-09-28" }
+      ],
+      docRequests: [
+        { id: "DOC-20260930-PPITZ", empId: "P322", name: "นางสาว นภสร หงส์หิรัญวิจิตร", dept: "Human Resource Management", type: "work_certificate", purpose: "ขอสินเชื่อกับสถาบันการเงินหรือธนาคาร", status: "approved", date: "2026-09-30" }
+      ],
+      attendanceRecords: [
+        { date: "2026-09-30", empId: "EMP001", name: "นาย สมชาย ใจดี", status: "มาสาย", ip: "184.22.10.48" }
+      ],
+      auditTrail: [
+        { id: 1, timestamp: "2026-09-30 08:30:12", user: "P322 (Admin)", action: "UPDATE_QUOTA", detail: "แก้ไขโควตาพนักงาน EMP001" }
+      ],
+      showNewLeaveModal: false,
+      showNewDocModal: false,
+      selectedDocForPreview: null
+    };
+
+    function calculateTenure(startDateStr) {
+      const start = new Date(startDateStr);
+      const now = new Date();
+      let years = now.getFullYear() - start.getFullYear();
+      let months = now.getMonth() - start.getMonth();
+      let days = now.getDate() - start.getDate();
+      if (days < 0) { months--; const prev = new Date(now.getFullYear(), now.getMonth(), 0); days += prev.getDate(); }
+      if (months < 0) { years--; months += 12; }
+      return `${years} ปี ${months} เดือน ${days} วัน`;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (state.darkMode) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+
+      let fontSizeClass = 'text-base';
+      if (state.fontSizeLevel === 'large') fontSizeClass = 'text-lg';
+      if (state.fontSizeLevel === 'x-large') fontSizeClass = 'text-xl';
+      document.body.className = `${state.darkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-100 text-slate-800'} min-h-screen flex flex-col ${fontSizeClass}`;
+
+      if (!state.currentUser) {
+        app.innerHTML = renderLoginScreen();
+        return;
+      }
+
+      if (state.currentUser.role === 'executive' && state.activeTab !== 'executive_overview') {
+        state.activeTab = 'executive_overview';
+      }
+
+      app.innerHTML = `
+        <div class="flex h-screen overflow-hidden">
+          <aside class="w-72 bg-brand-primary text-white flex flex-col shadow-xl no-print">
+            <div class="p-5 border-b border-blue-900 flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center font-bold text-white shadow-md">PSP</div>
+              <div>
+                <h1 class="font-bold text-lg leading-tight">VELA LAA</h1>
+                <p class="text-xs text-blue-200">บริษัท ปรีชาสตีลพาร์ท จำกัด</p>
+              </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+              ${state.currentUser.role === 'executive' ? `
+                <button onclick="switchTab('executive_overview')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'executive_overview' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-chart-pie w-5"></i><span>แดชบอร์ดผู้บริหาร</span>
+                </button>
+              ` : `
+                <button onclick="switchTab('dashboard')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'dashboard' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-house w-5"></i><span>แดชบอร์ดส่วนตัว</span>
+                </button>
+                <button onclick="switchTab('my_leave')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'my_leave' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-calendar-days w-5"></i><span>การลาของฉัน</span>
+                </button>
+                <button onclick="switchTab('documents')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'documents' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-file-contract w-5"></i><span>ขอเอกสารสำคัญ</span>
+                </button>
+                <button onclick="switchTab('id_card')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'id_card' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-id-card w-5"></i><span>บัตรพนักงานดิจิทัล</span>
+                </button>
+              `}
+
+              ${['supervisor', 'admin', 'executive'].includes(state.currentUser.role) ? `
+                <button onclick="switchTab('approvals')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'approvals' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-clipboard-check w-5"></i><span>อนุมัติคำขอ</span>
+                </button>
+              ` : ''}
+
+              ${['admin', 'executive'].includes(state.currentUser.role) ? `
+                <button onclick="switchTab('attendance')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'attendance' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-users-viewfinder w-5"></i><span>บันทึกการมาทำงาน</span>
+                </button>
+                <button onclick="switchTab('audit_trail')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${state.activeTab === 'audit_trail' ? 'bg-brand-accent text-white shadow' : 'text-blue-100 hover:bg-blue-900'}">
+                  <i class="fa-solid fa-shield-halved w-5"></i><span>ประวัติ Audit Trail</span>
+                </button>
+              ` : ''}
+            </nav>
+
+            <div class="p-4 border-t border-blue-900">
+              <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg font-medium transition text-sm">
+                <i class="fa-solid fa-right-from-bracket"></i><span>ออกจากระบบ</span>
+              </button>
+            </div>
+          </aside>
+
+          <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 px-6 flex items-center justify-between shadow-sm no-print">
+              <div class="flex items-center space-x-2 text-sm text-slate-500">
+                <!-- IP Location แสดงเฉพาะ Admin เท่านั้น -->
+                ${state.currentUser.role === 'admin' ? `
+                  <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <i class="fa-solid fa-location-dot text-brand-accent"></i>
+                    <span class="text-xs font-semibold">Admin IP: ${state.ipLocation}</span>
+                  </div>
+                ` : ``}
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+                  <button onclick="setFontSize('normal')" class="px-2 py-1 text-xs font-bold rounded ${state.fontSizeLevel === 'normal' ? 'bg-white shadow' : ''}">A</button>
+                  <button onclick="setFontSize('large')" class="px-2 py-1 text-sm font-bold rounded ${state.fontSizeLevel === 'large' ? 'bg-white shadow' : ''}">A+</button>
+                  <button onclick="setFontSize('x-large')" class="px-2 py-1 text-base font-bold rounded ${state.fontSizeLevel === 'x-large' ? 'bg-white shadow' : ''}">A++</button>
+                </div>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-yellow-400">
+                  <i class="fa-solid ${state.darkMode ? 'fa-sun' : 'fa-moon'}"></i>
+                </button>
+                <div class="flex items-center space-x-3 pl-3 border-l border-slate-200">
+                  <img src="${state.currentUser.avatar}" class="w-9 h-9 rounded-full object-cover border-2 border-brand-accent">
+                  <div class="hidden md:block text-left">
+                    <p class="text-xs font-bold leading-tight">${state.currentUser.name}</p>
+                    <p class="text-[10px] text-slate-500">${state.currentUser.role.toUpperCase()}</p>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900">
+              ${renderActiveTabContent()}
+            </main>
+          </div>
+        </div>
+
+        ${state.showNewLeaveModal ? renderNewLeaveModal() : ''}
+        ${state.showNewDocModal ? renderNewDocModal() : ''}
+        ${state.selectedDocForPreview ? renderDocumentPreviewModal() : ''}
+      `;
+    }
+
+    function renderLoginScreen() {
+      return `
+        <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-primary via-blue-900 to-slate-900 p-6">
+          <div class="max-w-md w-full bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-8 text-center bg-brand-primary text-white">
+              <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-accent flex items-center justify-center text-2xl font-bold shadow-lg">PSP</div>
+              <h1 class="text-2xl font-bold">VELA LAA</h1>
+              <p class="text-xs text-blue-200 mt-1">บริษัท ปรีชาสตีลพาร์ท จำกัด</p>
+            </div>
+            <div class="p-8 space-y-6">
+              <div class="space-y-2">
+                <label class="text-sm font-semibold">รหัสพนักงาน (Employee ID)</label>
+                <input type="text" id="loginEmpId" placeholder="เช่น P322, EMP001, MGT001, EXC001" class="w-full px-4 py-3 rounded-xl border dark:bg-slate-700 text-center font-bold text-lg">
+              </div>
+              <button onclick="handleLogin()" class="w-full bg-brand-accent hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                เข้าสู่ระบบ
+              </button>
+              <div class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-xl text-xs space-y-1">
+                <p class="font-bold text-brand-primary dark:text-blue-400">🔑 รหัสพนักงานสำหรับทดสอบ:</p>
+                <p>• <b>P322</b> (คุณนภสร - Admin / เห็น IP)</p>
+                <p>• <b>EMP001</b> (พนักงานทั่วไป - ไม่เห็น IP)</p>
+                <p>• <b>MGT001</b> (หัวหน้างาน)</p>
+                <p>• <b>EXC001</b> (ผู้บริหาร)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderActiveTabContent() {
+      if (state.currentUser.role === 'executive' && state.activeTab === 'executive_overview') {
+        return renderExecutiveOverview();
+      }
+      switch(state.activeTab) {
+        case 'dashboard': return renderDashboard();
+        case 'my_leave': return renderMyLeave();
+        case 'documents': return renderDocuments();
+        case 'id_card': return renderIdCard();
+        case 'approvals': return renderApprovals();
+        case 'attendance': return renderAttendance();
+        case 'audit_trail': return renderAuditTrail();
+        default: return renderDashboard();
+      }
+    }
+
+    function renderDashboard() {
+      const user = state.currentUser;
+      const tenure = calculateTenure(user.startDate);
+      return `
+        <div class="space-y-6">
+          <div class="bg-gradient-to-r from-brand-primary to-blue-800 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+              <img src="${user.avatar}" class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md">
+              <div>
+                <h2 class="text-2xl font-bold">ยินดีต้อนรับกลับ, ${user.name}</h2>
+                <p class="text-sm text-blue-200">${user.dept} • รหัส: <span class="font-bold text-white">${user.id}</span></p>
+                <p class="text-xs text-blue-300 mt-1">อายุงาน: <span class="font-semibold text-white">${tenure}</span></p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <button onclick="openNewLeaveModal()" class="bg-brand-accent hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold shadow flex items-center space-x-2">
+                <i class="fa-solid fa-plus"></i><span>ยื่นใบลาใหม่</span>
+              </button>
+            </div>
+          </div>
+          <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 p-4 rounded-xl flex items-start space-x-3">
+            <i class="fa-solid fa-bullhorn text-amber-600 text-lg"></i>
+            <div>
+              <h4 class="font-bold text-amber-800 text-sm">ประกาศบริษัท</h4>
+              <p class="text-xs text-amber-700 mt-1">แจ้งเตือน: บริษัทไม่มีนโยบายวันลาสะสมข้ามปี กรุณาใช้สิทธิ์พักร้อนให้หมดภายใน 31 ธันวาคมนี้</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">พักร้อน (คงเหลือ)</p><h4 class="text-3xl font-extrabold text-blue-600 mt-1">${user.quota.annual} วัน</h4><p class="text-[10px] text-red-500 mt-1">ตัดทิ้งสิ้นปีโดยเด็ดขาด</p></div>
+              <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-umbrella-beach"></i></div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">ลากิจ</p><h4 class="text-3xl font-extrabold text-emerald-600 mt-1">${user.quota.business} วัน</h4></div>
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-briefcase"></i></div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">ลาป่วย</p><h4 class="text-3xl font-extrabold text-purple-600 mt-1">${user.quota.sick} วัน</h4></div>
+              <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl"><i class="fa-solid fa-bed-pulse"></i></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMyLeave() {
+      const myReqs = state.leaveRequests.filter(r => r.empId === state.currentUser.id);
+      return `
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold">การลาของฉัน</h2>
+            <button onclick="openNewLeaveModal()" class="bg-brand-accent text-white px-4 py-2 rounded-xl font-bold shadow text-sm"><i class="fa-solid fa-plus mr-2"></i>ยื่นใบลาใหม่</button>
+          </div>
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
+            <table class="w-full text-left">
+              <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">รหัส</th><th class="p-4">ประเภท</th><th class="p-4">วันที่ลา</th><th class="p-4">จำนวนวัน</th><th class="p-4">เหตุผล</th><th class="p-4">สถานะ</th></tr></thead>
+              <tbody class="divide-y text-sm">
+                ${myReqs.length === 0 ? `<tr><td colspan="6" class="p-6 text-center text-slate-400">ยังไม่มีประวัติการลา</td></tr>` : myReqs.map(r => `
+                  <tr>
+                    <td class="p-4 font-bold text-brand-primary">${r.id}</td>
+                    <td class="p-4 font-semibold">${r.type}</td>
+                    <td class="p-4 text-xs">${r.startDate} ถึง ${r.endDate}</td>
+                    <td class="p-4 font-bold">${r.days} วัน</td>
+                    <td class="p-4 text-slate-600">${r.reason}</td>
+                    <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติแล้ว</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDocuments() {
+      const myDocs = state.docRequests.filter(d => d.empId === state.currentUser.id);
+      return `
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold">ขอเอกสารสำคัญ</h2>
+              <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-clock mr-1 text-brand-accent"></i> ระยะเวลาดำเนินการ 3-5 วันทำการ</p>
+            </div>
+            <button onclick="openNewDocModal()" class="bg-brand-accent text-white px-4 py-2 rounded-xl font-bold shadow text-sm"><i class="fa-solid fa-plus mr-2"></i>ยื่นคำขอใหม่</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${myDocs.map(d => `
+              <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold bg-blue-50 text-brand-primary px-3 py-1 rounded-full">เลขที่: ${d.id}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติแล้ว</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg">หนังสือรับรองการทำงาน</h3>
+                  <p class="text-xs text-slate-500 mt-1">วัตถุประสงค์: ${d.purpose}</p>
+                </div>
+                <div class="pt-2 border-t flex justify-between items-center">
+                  <span class="text-xs text-slate-400">วันที่ยื่น: ${d.date}</span>
+                  <button onclick="previewOfficialDocument('${d.id}')" class="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold shadow flex items-center space-x-2">
+                    <i class="fa-solid fa-file-pdf"></i><span>ดูเอกสารทางการ</span>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- ดิจิทัลบัตรพนักงาน (ถอดแบบ Canva ทั้งหน้าและหลังแบบเป๊ะ 100%) ---
+    function renderIdCard() {
+      const user = state.currentUser;
+      return `
+        <div class="space-y-6 flex flex-col items-center">
+          <div class="w-full flex items-center justify-between">
+            <h2 class="text-2xl font-bold">บัตรประจำตัวพนักงานดิจิทัล</h2>
+            <button onclick="toggleIdCardFlip()" class="bg-brand-primary text-white px-4 py-2 rounded-xl text-sm font-bold shadow"><i class="fa-solid fa-rotate mr-2"></i>พลิกบัตร (หน้า / หลัง)</button>
+          </div>
+
+          <div class="flip-card ${state.idCardFlipped ? 'flipped' : ''} w-[380px] h-[600px] cursor-pointer shadow-2xl rounded-3xl" onclick="toggleIdCardFlip()">
+            <div class="flip-card-inner relative w-full h-full text-center">
+              
+              <!-- FRONT SIDE (ด้านหน้า) -->
+              <div class="flip-card-front absolute w-full h-full bg-white text-slate-900 rounded-3xl overflow-hidden border border-slate-300 flex flex-col justify-between shadow-2xl">
+                <div>
+                  <div class="h-3 bg-[#ed8936] w-full"></div>
+                  <div class="h-4 bg-[#1a365d] w-full"></div>
+                  <div class="pt-4 pb-2 px-4 flex flex-col items-center space-y-1.5">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-9 h-9 rounded-full bg-[#ed8936] flex items-center justify-center text-white font-bold text-[10px] shadow">P.S.P.</div>
+                      <div class="text-[#1a365d] font-black text-2xl tracking-widest">KIP</div>
+                    </div>
+                    <div class="text-center leading-tight pt-1">
+                      <h4 class="font-bold text-xs text-[#1a365d]">บริษัท ปรีชาสตีลพาร์ท จำกัด</h4>
+                      <p class="text-[9px] text-slate-500 font-semibold tracking-wider">PREECHA STEEL PART CO.,LTD</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-6 py-1 flex flex-col items-center">
+                  <div class="w-28 h-36 rounded-2xl overflow-hidden border-4 border-slate-200 shadow-md mb-3 bg-slate-100">
+                    <img src="${user.avatar}" class="w-full h-full object-cover">
+                  </div>
+                  <h3 class="font-extrabold text-sm text-[#1a365d]">${user.name}</h3>
+                  <p class="text-[10px] font-bold text-slate-600 tracking-wide mt-0.5">${user.nameEn}</p>
+                  <p class="text-[11px] font-semibold text-slate-700 mt-1.5">${user.dept}</p>
+                  <p class="text-xs font-bold text-[#1a365d] mt-1">ID : ${user.id}</p>
+                </div>
+
+                <div>
+                  <div class="h-4 bg-[#ed8936] w-full"></div>
+                  <div class="h-3 bg-[#1a365d] w-full"></div>
+                </div>
+              </div>
+
+              <!-- BACK SIDE (ด้านหลัง ตาม Canva เป๊ะ 100%) -->
+              <div class="flip-card-back absolute w-full h-full bg-white text-slate-900 rounded-3xl overflow-hidden border border-slate-300 flex flex-col justify-between shadow-2xl relative">
+                
+                <!-- ลายน้ำโลโก้ KIP จางๆ ตรงกลาง -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
+                  <span class="text-7xl font-black tracking-widest text-[#1a365d]">KIP</span>
+                </div>
+
+                <div>
+                  <div class="h-3 bg-[#ed8936] w-full"></div>
+                  <div class="h-4 bg-[#1a365d] w-full"></div>
+                  <div class="pt-3 pb-2 px-4 flex flex-col items-center space-y-1 border-b border-slate-200 bg-slate-50">
+                    <div class="flex items-center space-x-2">
+                      <div class="w-7 h-7 rounded-full bg-[#ed8936] flex items-center justify-center text-white font-bold text-[9px] shadow">P.S.P.</div>
+                      <div class="text-[#1a365d] font-black text-lg tracking-widest">KIP</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- เนื้อหาเงื่อนไขการใช้งานบัตรพนักงาน -->
+                <div class="p-5 text-left space-y-2 z-10">
+                  <h4 class="font-bold text-xs text-[#1a365d] uppercase border-b pb-1 text-center">เงื่อนไขการใช้งานบัตรพนักงาน</h4>
+                  <ol class="text-[10px] text-slate-600 space-y-1.5 list-decimal pl-4 leading-normal">
+                    <li>บัตรประจำตัวฉบับนี้ใช้สำหรับแสดงตนเพื่อปฏิบัติงานภายในบริษัทเท่านั้น</li>
+                    <li>พนักงานต้องพกบัตรประจำตัวตลอดเวลาในขณะปฏิบัติงาน</li>
+                    <li>หากบัตรสูญหายหรือชำรุด มีค่าธรรมเนียมในการออกบัตรใหม่ 50 บาท</li>
+                    <li>กรุณานำส่งคืนบริษัททันทีเมื่อพ้นสภาพการเป็นพนักงาน</li>
+                  </ol>
+                  <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[9px] text-slate-500 leading-tight mt-3">
+                    <b>ติดต่อ:</b> หากพบบัตรนี้กรุณาส่งคืนฝ่ายทรัพยากรบุคคล บริษัท ปรีชาสตีลพาร์ท จำกัด หรือติดต่อ โทร.034-406058 ต่อ 007
+                  </div>
+                </div>
+
+                <div>
+                  <div class="h-4 bg-[#ed8936] w-full"></div>
+                  <div class="h-3 bg-[#1a365d] w-full"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderApprovals() {
+      return `
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold">อนุมัติคำขอลา (Approval Workflow)</h2>
+          <div class="space-y-4">
+            ${state.leaveRequests.map(r => `
+              <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div class="flex items-center space-x-3">
+                    <span class="font-bold text-brand-primary text-sm">${r.id}</span>
+                    <span class="text-xs bg-slate-100 px-2.5 py-0.5 rounded-full font-semibold">${r.dept}</span>
+                  </div>
+                  <h4 class="font-bold text-base">${r.name} (${r.empId})</h4>
+                  <p class="text-xs text-slate-500">ประเภท: ${r.type} (${r.startDate} ถึง ${r.endDate}) •${r.days} วัน</p>
+                  <p class="text-xs text-slate-600 italic bg-slate-50 p-2 rounded-lg">เหตุผล: "${r.reason}"</p>
+                </div>
+                <div class="flex space-x-3">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">อนุมัติเรียบร้อย</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAttendance() {
+      return `
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold">บันทึกการมาทำงานและการลารายเดือน</h2>
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
+            <table class="w-full text-left">
+              <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">วันที่</th><th class="p-4">รหัสพนักงาน</th><th class="p-4">ชื่อ-นามสกุล</th><th class="p-4">สถานะ</th><th class="p-4">IP Location</th></tr></thead>
+              <tbody class="divide-y text-sm">
+                ${state.attendanceRecords.map(a => `
+                  <tr><td class="p-4 text-xs">${a.date}</td><td class="p-4 font-bold">${a.empId}</td><td class="p-4">${a.name}</td><td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">${a.status}</span></td><td class="p-4 text-xs text-slate-500">${a.ip}</td></tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAuditTrail() {
+      return `
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold">ประวัติการเปลี่ยนแปลงระดับฟิลด์ (Audit Trail)</h2>
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border overflow-hidden">
+            <table class="w-full text-left">
+              <thead><tr class="bg-slate-50 text-xs text-slate-500 uppercase border-b"><th class="p-4">เวลา</th><th class="p-4">ผู้ใช้งาน</th><th class="p-4">การกระทำ</th><th class="p-4">รายละเอียด</th></tr></thead>
+              <tbody class="divide-y text-sm">
+                ${state.auditTrail.map(at => `
+                  <tr><td class="p-4 text-xs text-slate-500">${at.timestamp}</td><td class="p-4 font-bold">${at.user}</td><td class="p-4"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs">${at.action}</span></td><td class="p-4 text-xs">${at.detail}</td></tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderExecutiveOverview() {
+      return `
+        <div class="space-y-6">
+          <div class="bg-gradient-to-r from-slate-900 to-brand-primary rounded-2xl p-6 text-white shadow-lg">
+            <h2 class="text-2xl font-bold">แดชบอร์ดภาพรวมผู้บริหาร (Executive Overview)</h2>
+            <p class="text-xs text-slate-300 mt-1">รายงานสถิติและภาพรวมองค์กรสำหรับผู้บริหารระดับสูง</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">พนักงานทั้งหมด</p><h4 class="text-3xl font-extrabold text-brand-primary mt-1">142 คน</h4></div>
+              <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-primary flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">มาปฏิบัติงานวันนี้</p><h4 class="text-3xl font-extrabold text-emerald-600 mt-1">138 คน</h4></div>
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-user-check"></i></div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border flex justify-between items-center">
+              <div><p class="text-xs text-slate-500 uppercase">คำขอรอนอนุมัติ</p><h4 class="text-3xl font-extrabold text-amber-600 mt-1">1 รายการ</h4></div>
+              <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl"><i class="fa-solid fa-clock"></i></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDocumentPreviewModal() {
+      const doc = state.docRequests.find(d => d.id === state.selectedDocForPreview);
+      const user = state.currentUser;
+      if (!doc) return '';
+
+      return `
+        <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div class="bg-white text-slate-900 rounded-2xl max-w-4xl w-full p-8 shadow-2xl relative printable-document max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-end space-x-3 mb-6 no-print">
+              <button onclick="window.print()" class="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-print mr-2"></i> พิมพ์ / PDF</button>
+              <button onclick="closeDocumentPreview()" class="bg-slate-200 px-4 py-2 rounded-xl text-xs font-bold">ปิด</button>
+            </div>
+            <div class="p-8 border border-slate-300 rounded-xl space-y-6 relative bg-white">
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05]">
+                <div class="w-96 h-96 rounded-full bg-brand-primary flex items-center justify-center text-white text-9xl font-bold">PSP</div>
+              </div>
+              <div class="grid grid-cols-5 items-center pb-4 border-b-2 border-brand-primary">
+                <div class="col-span-1 flex justify-center">
+                  <div class="w-20 h-20 rounded-full bg-brand-accent text-white font-bold flex items-center justify-center text-xl shadow">PSP</div>
+                </div>
+                <div class="col-span-4 text-left space-y-1">
+                  <h2 class="text-lg font-bold text-brand-primary">บริษัท ปรีชาสตีลพาร์ท จำกัด</h2>
+                  <p class="text-xs text-slate-600">PREECHA STEEL PART CO., LTD.</p>
+                  <p class="text-[11px] text-slate-500">518 ถนนเทอดไท แขวงบางแค เขตบางแค กรุงเทพฯ และสาขาสมุทรสาคร</p>
+                </div>
+              </div>
+              <div class="text-center py-4">
+                <h3 class="text-xl font-bold tracking-wide">หนังสือรับรองการทำงาน</h3>
+                <p class="text-xs text-slate-400 mt-1">Work Certificate</p>
+              </div>
+              <div class="space-y-4 text-sm leading-relaxed text-justify px-4">
+                <p style="text-indent: 40px;">หนังสือฉบับนี้ออกให้เพื่อรับรองว่า <b>${user.name}</b> (รหัสพนักงาน: ${user.id}) เป็นพนักงานประจำของบริษัท ปรีชาสตีลพาร์ท จำกัด ดำรงตำแหน่ง <b>${user.dept}</b> โดยเริ่มปฏิบัติงานตั้งแต่วันที่ ${user.startDate} จนถึงปัจจุบัน</p>
+                <p style="text-indent: 40px;">ปัจจุบันได้รับอัตราเงินเดือนรวมสวัสดิการ <b>${user.salary} บาท</b></p>
+                <p style="text-indent: 40px;">หนังสือรับรองฉบับนี้ออกให้เพื่อนำไปใช้สำหรับ: <b>${doc.purpose}</b></p>
+              </div>
+              <div class="pt-16 flex justify-end">
+                <div class="text-center space-y-8 w-64">
+                  <p class="border-b border-dashed pb-1">(นางสาว กรกนก บุญญา)</p>
+                  <p class="font-semibold text-xs">ผู้มีอำนาจลงนามฝ่ายบุคคล (HR Manager)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function openNewLeaveModal() { state.showNewLeaveModal = true; render(); }
+    function closeNewLeaveModal() { state.showNewLeaveModal = false; render(); }
+    function openNewDocModal() { state.showNewDocModal = true; render(); }
+    function closeNewDocModal() { state.showNewDocModal = false; render(); }
+
+    function renderNewLeaveModal() {
+      return `
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold">ยื่นใบลาใหม่</h3>
+            <div class="space-y-3">
+              <div><label class="text-xs font-semibold">ประเภทการลา</label><select id="leaveTypeInput" class="w-full mt-1 p-3 rounded-xl border text-sm"><option value="พักร้อน">พักร้อน</option><option value="ลากิจ">ลากิจ</option><option value="ลาป่วย">ลาป่วย</option></select></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-xs font-semibold">วันที่เริ่มต้น</label><input type="date" id="leaveStartInput" value="2026-10-05" class="w-full mt-1 p-3 rounded-xl border text-sm"></div>
+                <div><label class="text-xs font-semibold">วันที่สิ้นสุด</label><input type="date" id="leaveEndInput" value="2026-10-06" class="w-full mt-1 p-3 rounded-xl border text-sm"></div>
+              </div>
+              <div><label class="text-xs font-semibold">เหตุผลในการลา</label><textarea id="leaveReasonInput" rows="3" placeholder="ระบุเหตุผล..." class="w-full mt-1 p-3 rounded-xl border text-sm"></textarea></div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+              <button onclick="closeNewLeaveModal()" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-bold">ยกเลิก</button>
+              <button onclick="submitLeaveRequest()" class="px-4 py-2 bg-brand-accent text-white rounded-xl text-xs font-bold">ยื่นคำขอ</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderNewDocModal() {
+      return `
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold">ยื่นขอหนังสือรับรอง</h3>
+            <div class="space-y-3">
+              <div><label class="text-xs font-semibold">ประเภทเอกสาร</label><select id="docTypeInput" class="w-full mt-1 p-3 rounded-xl border text-sm"><option value="work_certificate">หนังสือรับรองการทำงาน</option></select></div>
+              <div><label class="text-xs font-semibold">วัตถุประสงค์</label><input type="text" id="docPurposeInput" placeholder="เช่น ขอสินเชื่อกับสถาบันการเงินหรือธนาคาร" class="w-full mt-1 p-3 rounded-xl border text-sm"></div>
+              <p class="text-[11px] text-amber-600 font-medium">⚠️ ระยะเวลาดำเนินการ 3-5 วันทำการ</p>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+              <button onclick="closeNewDocModal()" class="px-4 py-2 bg-slate-200 rounded-xl text-xs font-bold">ยกเลิก</button>
+              <button onclick="submitDocRequest()" class="px-4 py-2 bg-brand-accent text-white rounded-xl text-xs font-bold">ยืนยันการขอ</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleLogin() {
+      const empId = document.getElementById('loginEmpId').value.trim().toUpperCase();
+      const found = usersDb.find(u => u.id === empId);
+      if (found) {
+        state.currentUser = found;
+        state.activeTab = found.role === 'executive' ? 'executive_overview' : 'dashboard';
+        render();
+      } else {
+        alert("ไม่พบรหัสพนักงานนี้ (กรุณาลอง P322 สำหรับ Admin หรือ EMP001 สำหรับพนักงานทั่วไป)");
+      }
+    }
+
+    function logout() { state.currentUser = null; render(); }
+    function switchTab(tab) { state.activeTab = tab; render(); }
+    function toggleDarkMode() { state.darkMode = !state.darkMode; render(); }
+    function setFontSize(level) { state.fontSizeLevel = level; render(); }
+    function toggleIdCardFlip() { state.idCardFlipped = !state.idCardFlipped; render(); }
+    function previewOfficialDocument(id) { state.selectedDocForPreview = id; render(); }
+    function closeDocumentPreview() { state.selectedDocForPreview = null; render(); }
+
+    function submitLeaveRequest() {
+      const type = document.getElementById('leaveTypeInput').value;
+      const start = document.getElementById('leaveStartInput').value;
+      const end = document.getElementById('leaveEndInput').value;
+      const reason = document.getElementById('leaveReasonInput').value;
+      state.leaveRequests.unshift({
+        id: `LR-20260930-${Math.floor(Math.random()*900+100)}`,
+        empId: state.currentUser.id,
+        name: state.currentUser.name,
+        dept: state.currentUser.dept,
+        type: type, startDate: start, endDate: end, days: 2,
+        reason: reason || 'ธุระส่วนตัว', status: 'approved', date: '2026-09-30'
+      });
+      closeNewLeaveModal();
+      alert("ยื่นใบลาสำเร็จ!");
+    }
+
+    function submitDocRequest() {
+      const type = document.getElementById('docTypeInput').value;
+      const purpose = document.getElementById('docPurposeInput').value;
+      state.docRequests.unshift({
+        id: `DOC-20260930-${Math.random().toString(36).substring(2,7).toUpperCase()}`,
+        empId: state.currentUser.id,
+        name: state.currentUser.name,
+        dept: state.currentUser.dept,
+        type: type, purpose: purpose || 'ขอสินเชื่อธนาคาร',
+        status: 'approved', date: '2026-09-30'
+      });
+      closeNewDocModal();
+      alert("ยื่นขอเอกสารสำเร็จ ระบบสร้างเอกสารทางการให้เรียบร้อย!");
+    }
+
+    render();
+  </script>
+</body>
+</html>
